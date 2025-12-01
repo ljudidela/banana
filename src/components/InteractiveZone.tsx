@@ -1,45 +1,65 @@
-import { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useRef, MouseEvent, TouchEvent } from 'react';
 
-export const InteractiveZone = () => {
+const InteractiveZone = () => {
   const [count, setCount] = useState(0);
-  const constraintsRef = useRef(null);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const handleStart = () => {
+    setIsDragging(true);
+    setCount(c => c + 1);
+  };
+
+  const handleEnd = () => {
+    setIsDragging(false);
+    setPosition({ x: 0, y: 0 }); // Reset to center
+  };
+
+  const handleMove = (clientX: number, clientY: number) => {
+    if (!isDragging || !containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = clientX - rect.left - rect.width / 2;
+    const y = clientY - rect.top - rect.height / 2;
+    setPosition({ x, y });
+  };
+
+  const onMouseMove = (e: MouseEvent) => handleMove(e.clientX, e.clientY);
+  const onTouchMove = (e: TouchEvent) => handleMove(e.touches[0].clientX, e.touches[0].clientY);
 
   return (
-    <section className="min-h-screen py-20 bg-banana flex flex-col items-center justify-center overflow-hidden">
-      <div className="text-center mb-10">
-        <h2 className="text-5xl font-black text-banana-text mb-4">Потрогай банан</h2>
-        <p className="text-2xl font-bold bg-white/50 px-6 py-2 rounded-full inline-block">
-          Бананчиков тронуто: {count}
-        </p>
-      </div>
+    <section className="py-20 bg-white/30">
+      <div className="container mx-auto px-4 text-center">
+        <h2 className="text-4xl font-black mb-4">Потрогай банан</h2>
+        <p className="text-xl mb-8">Бананчиков тронуто: <span className="font-mono font-bold text-3xl text-orange-500">{count}</span></p>
 
-      <motion.div 
-        ref={constraintsRef} 
-        className="w-full max-w-4xl h-[60vh] bg-white/30 rounded-[3rem] border-4 border-white/50 relative overflow-hidden shadow-inner"
-      >
-        <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
-          <span className="text-2xl font-bold">Drag & Drop Zone</span>
-        </div>
+        <div 
+          ref={containerRef}
+          className="h-96 w-full max-w-2xl mx-auto bg-cream border-4 border-dashed border-banana rounded-3xl flex items-center justify-center relative overflow-hidden cursor-grab active:cursor-grabbing select-none"
+          onMouseMove={onMouseMove}
+          onMouseUp={handleEnd}
+          onMouseLeave={handleEnd}
+          onTouchMove={onTouchMove}
+          onTouchEnd={handleEnd}
+        >
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
+            <span className="text-2xl font-bold">Перетащи меня!</span>
+          </div>
 
-        {[...Array(5)].map((_, i) => (
-          <motion.div
-            key={i}
-            drag
-            dragConstraints={constraintsRef}
-            whileDrag={{ scale: 1.2, cursor: 'grabbing' }}
-            whileHover={{ scale: 1.1, cursor: 'grab' }}
-            onDragStart={() => setCount(c => c + 1)}
-            className="absolute text-8xl select-none touch-none"
-            style={{ 
-              top: `${20 + Math.random() * 60}%`, 
-              left: `${20 + Math.random() * 60}%` 
-            }}
+          <div 
+            onMouseDown={handleStart}
+            onTouchStart={handleStart}
+            style={{ transform: `translate(${position.x}px, ${position.y}px) rotate(${position.x * 0.1}deg)` }}
+            className="transition-transform duration-75 ease-linear z-10"
           >
-            🍌
-          </motion.div>
-        ))}
-      </motion.div>
+            <div className={`text-9xl filter drop-shadow-xl ${isDragging ? 'scale-110' : 'animate-wiggle'}`}>
+              🍌
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 };
+
+export default InteractiveZone;
