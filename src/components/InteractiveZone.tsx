@@ -1,92 +1,59 @@
-import React, { useState, useRef } from 'react';
+import { useState } from 'react';
 
-const InteractiveZone = () => {
+export default function InteractiveZone() {
   const [count, setCount] = useState(0);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [isClicked, setIsClicked] = useState(false);
 
-  const handleStart = (e: React.MouseEvent | React.TouchEvent) => {
-    setIsDragging(true);
-    // Prevent scrolling on mobile while dragging
-    if (e.type === 'touchstart') {
-      document.body.style.overflow = 'hidden';
-    }
-  };
-
-  const handleEnd = () => {
-    setIsDragging(false);
-    document.body.style.overflow = 'auto';
-    setCount(c => c + 1);
-  };
-
-  const handleMove = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!isDragging || !containerRef.current) return;
-
-    const containerRect = containerRef.current.getBoundingClientRect();
-    let clientX, clientY;
-
-    if ('touches' in e) {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
-    } else {
-      clientX = (e as React.MouseEvent).clientX;
-      clientY = (e as React.MouseEvent).clientY;
-    }
-
-    const x = clientX - containerRect.left - 50; // Center offset
-    const y = clientY - containerRect.top - 50;
-
-    // Simple bounds check
-    const boundedX = Math.max(0, Math.min(x, containerRect.width - 100));
-    const boundedY = Math.max(0, Math.min(y, containerRect.height - 100));
-
-    setPosition({ x: boundedX, y: boundedY });
+  const handleBananaClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Останавливаем всплытие, чтобы клик не считался, если бы обработчик был выше
+    e.stopPropagation();
+    setCount((c) => c + 1);
+    setIsClicked(true);
+    setTimeout(() => setIsClicked(false), 150);
   };
 
   return (
-    <section className="py-20 bg-banana-light overflow-hidden">
+    <section className="py-20 bg-yellow-50">
       <div className="container mx-auto px-4 text-center">
-        <h2 className="text-4xl font-bold mb-4">Потрогай банан</h2>
-        <p className="text-xl mb-8">Перетащи его, он любит путешествовать!</p>
+        <h2 className="text-3xl md:text-4xl font-bold mb-12 text-gray-800">
+          Потрогай банан
+        </h2>
         
-        <div className="bg-white rounded-2xl p-4 shadow-inner max-w-2xl mx-auto">
-          <div className="text-2xl font-bold mb-4 text-banana-dark">
-            Бананчиков тронуто: {count}
-          </div>
-          
-          <div 
-            ref={containerRef}
-            className="h-[400px] bg-cream rounded-xl relative overflow-hidden cursor-crosshair border-2 border-dashed border-banana-dark"
-            onMouseMove={handleMove}
-            onMouseUp={handleEnd}
-            onMouseLeave={handleEnd}
-            onTouchMove={handleMove}
-            onTouchEnd={handleEnd}
-          >
-            <div
-              className={`absolute w-24 h-24 flex items-center justify-center text-6xl cursor-grab active:cursor-grabbing select-none transition-transform ${isDragging ? 'scale-125 rotate-12' : 'scale-100'}`}
-              style={{ 
-                left: position.x, 
-                top: position.y, 
-                touchAction: 'none'
-              }}
-              onMouseDown={handleStart}
-              onTouchStart={handleStart}
+        <div className="flex flex-col items-center justify-center space-y-8">
+          <div className="relative">
+            {/* Обработчик клика теперь только на самом банане */}
+            <div 
+              onClick={handleBananaClick}
+              className={`
+                text-9xl cursor-pointer select-none transition-transform duration-100
+                ${isClicked ? 'scale-95' : 'hover:scale-110'}
+              `}
+              role="button"
+              aria-label="Click the banana"
             >
               🍌
             </div>
             
-            {!isDragging && count === 0 && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-50">
-                <span className="text-xl">Drag me!</span>
+            {/* Анимация +1 */}
+            {isClicked && (
+              <div className="absolute -top-4 -right-4 text-2xl font-bold text-yellow-600 animate-bounce pointer-events-none">
+                +1
               </div>
             )}
           </div>
+
+          <div className="bg-white p-6 rounded-2xl shadow-xl border-2 border-yellow-100 min-w-[200px]">
+            <p className="text-gray-500 mb-2 font-medium">Бананометр</p>
+            <div className="text-5xl font-black text-yellow-500">
+              {count}
+            </div>
+          </div>
+
+          <p className="text-gray-400 text-sm">
+            (Кликай прямо по банану, чтобы увеличить счетчик)
+          </p>
         </div>
       </div>
     </section>
   );
-};
-
-export default InteractiveZone;
+}
