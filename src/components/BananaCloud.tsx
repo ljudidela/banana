@@ -1,77 +1,51 @@
-import { motion } from 'framer-motion';
-
-const features = [
-  { title: "99% Калия", desc: "Зарядись энергией" },
-  { title: "100% Настроения", desc: "Улыбка гарантирована" },
-  { title: "Жёлтый — новый чёрный", desc: "Стиль в каждом пикселе" }
-];
-
-export const BananaCloud = () => {
+const BananaCloud = () => {
   return (
-    <section className="min-h-screen py-20 relative overflow-hidden bg-banana-bg">
+    <section className="min-h-[80vh] py-20 relative overflow-hidden flex flex-col items-center justify-center">
       {/* Floating Bananas Background */}
-      {[...Array(15)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute text-4xl opacity-30 select-none pointer-events-none"
-          initial={{ 
-            x: Math.random() * window.innerWidth, 
-            y: Math.random() * window.innerHeight 
-          }}
-          animate={{ 
-            y: [0, -100, 0],
-            rotate: [0, 360],
-            scale: [1, 1.2, 1]
-          }}
-          transition={{ 
-            duration: 10 + Math.random() * 10, 
-            repeat: Infinity, 
-            ease: "linear" 
+      {[...Array(6)].map((_, i) => (
+        <div 
+          key={i} 
+          className={`absolute opacity-20 animate-float-${i % 2 === 0 ? 'fast' : 'normal'}`}
+          style={{ 
+            top: `${Math.random() * 80}%`, 
+            left: `${Math.random() * 90}%`, 
+            transform: `rotate(${Math.random() * 360}deg) scale(${0.5 + Math.random()})`,
+            animationDelay: `${i * 0.5}s`
           }}
         >
-          🍌
-        </motion.div>
+          <span className="text-6xl">🍌</span>
+        </div>
       ))}
 
-      <div className="container mx-auto px-4 relative z-10">
-        <motion.h2 
-          initial={{ opacity: 0, y: 50 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-5xl md:text-6xl font-black text-center mb-20 text-banana-text"
-        >
-          Банановый кайф
-        </motion.h2>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {features.map((feature, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, scale: 0.5 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.2, type: "spring" }}
-              whileHover={{ y: -10 }}
-              className="bg-white/80 backdrop-blur-sm p-8 rounded-3xl shadow-xl border-2 border-banana text-center"
-            >
-              <div className="text-6xl mb-4">✨</div>
-              <h3 className="text-2xl font-bold mb-2">{feature.title}</h3>
-              <p className="text-gray-600">{feature.desc}</p>
-            </motion.div>
-          ))}
+      <div className="container mx-auto px-4 z-10 grid md:grid-cols-2 gap-12 items-center">
+        <div className="space-y-8">
+          <div className="bg-white/50 backdrop-blur-sm p-8 rounded-3xl shadow-xl hover:scale-105 transition-transform duration-300 border-2 border-banana">
+            <h2 className="text-3xl font-bold mb-2">99% Калия</h2>
+            <p className="text-xl text-gray-700">100% Настроения. Доказано британскими учёными (наверное).</p>
+          </div>
+          
+          <div className="bg-white/50 backdrop-blur-sm p-8 rounded-3xl shadow-xl hover:scale-105 transition-transform duration-300 delay-100 border-2 border-banana">
+            <h2 className="text-3xl font-bold mb-2">Жёлтый — новый чёрный</h2>
+            <p className="text-xl text-gray-700">Стильно, модно, молодёжно и очень питательно.</p>
+          </div>
         </div>
 
-        <div className="mt-20 flex justify-center">
-          <motion.div
-            className="relative cursor-pointer group"
-            whileHover={{ scale: 1.2, rotate: 10 }}
-          >
-            <div className="text-9xl filter drop-shadow-xl">🍌</div>
-            <div className="absolute top-1/4 left-1/4 text-4xl opacity-0 group-hover:opacity-100 transition-opacity">🕶️</div>
-            <p className="text-center mt-4 font-bold text-banana-text opacity-50 group-hover:opacity-100">Я крутой банан</p>
-          </motion.div>
+        <div className="flex justify-center">
+          <div className="relative group cursor-pointer">
+            <div className="absolute inset-0 bg-banana rounded-full blur-3xl opacity-0 group-hover:opacity-50 transition-opacity duration-500"></div>
+            <svg width="250" height="250" viewBox="0 0 200 200" className="relative transform group-hover:rotate-12 transition-transform duration-300">
+               <path d="M150 40C150 40 160 20 140 20C120 20 100 50 80 80C60 110 40 140 40 160C40 180 60 190 80 180C100 170 140 140 160 100C180 60 150 40 150 40Z" fill="#FFE135" stroke="#1A1A1A" strokeWidth="4"/>
+               {/* Sunglasses */}
+               <rect x="60" y="80" width="30" height="15" rx="5" fill="#1A1A1A" />
+               <rect x="100" y="65" width="30" height="15" rx="5" fill="#1A1A1A" />
+               <line x1="90" y1="87" x2="100" y2="72" stroke="#1A1A1A" strokeWidth="2" />
+            </svg>
+            <p className="text-center mt-4 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Yeah, cool banana.</p>
+          </div>
         </div>
       </div>
     </section>
   );
 };
+
+export default BananaCloud;
