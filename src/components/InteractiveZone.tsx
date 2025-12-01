@@ -1,4 +1,4 @@
-import { useState, useRef, MouseEvent, TouchEvent } from 'react';
+import React, { useState, useRef } from 'react';
 
 const InteractiveZone = () => {
   const [count, setCount] = useState(0);
@@ -6,55 +6,82 @@ const InteractiveZone = () => {
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const handleStart = () => {
+  const handleStart = (e: React.MouseEvent | React.TouchEvent) => {
     setIsDragging(true);
-    setCount(c => c + 1);
+    // Prevent scrolling on mobile while dragging
+    if (e.type === 'touchstart') {
+      document.body.style.overflow = 'hidden';
+    }
   };
 
   const handleEnd = () => {
     setIsDragging(false);
-    setPosition({ x: 0, y: 0 }); // Reset to center
+    document.body.style.overflow = 'auto';
+    setCount(c => c + 1);
   };
 
-  const handleMove = (clientX: number, clientY: number) => {
+  const handleMove = (e: React.MouseEvent | React.TouchEvent) => {
     if (!isDragging || !containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const x = clientX - rect.left - rect.width / 2;
-    const y = clientY - rect.top - rect.height / 2;
-    setPosition({ x, y });
-  };
 
-  const onMouseMove = (e: MouseEvent) => handleMove(e.clientX, e.clientY);
-  const onTouchMove = (e: TouchEvent) => handleMove(e.touches[0].clientX, e.touches[0].clientY);
+    const containerRect = containerRef.current.getBoundingClientRect();
+    let clientX, clientY;
+
+    if ('touches' in e) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = (e as React.MouseEvent).clientX;
+      clientY = (e as React.MouseEvent).clientY;
+    }
+
+    const x = clientX - containerRect.left - 50; // Center offset
+    const y = clientY - containerRect.top - 50;
+
+    // Simple bounds check
+    const boundedX = Math.max(0, Math.min(x, containerRect.width - 100));
+    const boundedY = Math.max(0, Math.min(y, containerRect.height - 100));
+
+    setPosition({ x: boundedX, y: boundedY });
+  };
 
   return (
-    <section className="py-20 bg-white/30">
+    <section className="py-20 bg-banana-light overflow-hidden">
       <div className="container mx-auto px-4 text-center">
-        <h2 className="text-4xl font-black mb-4">Потрогай банан</h2>
-        <p className="text-xl mb-8">Бананчиков тронуто: <span className="font-mono font-bold text-3xl text-orange-500">{count}</span></p>
-
-        <div 
-          ref={containerRef}
-          className="h-96 w-full max-w-2xl mx-auto bg-cream border-4 border-dashed border-banana rounded-3xl flex items-center justify-center relative overflow-hidden cursor-grab active:cursor-grabbing select-none"
-          onMouseMove={onMouseMove}
-          onMouseUp={handleEnd}
-          onMouseLeave={handleEnd}
-          onTouchMove={onTouchMove}
-          onTouchEnd={handleEnd}
-        >
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
-            <span className="text-2xl font-bold">Перетащи меня!</span>
+        <h2 className="text-4xl font-bold mb-4">Потрогай банан</h2>
+        <p className="text-xl mb-8">Перетащи его, он любит путешествовать!</p>
+        
+        <div className="bg-white rounded-2xl p-4 shadow-inner max-w-2xl mx-auto">
+          <div className="text-2xl font-bold mb-4 text-banana-dark">
+            Бананчиков тронуто: {count}
           </div>
-
+          
           <div 
-            onMouseDown={handleStart}
-            onTouchStart={handleStart}
-            style={{ transform: `translate(${position.x}px, ${position.y}px) rotate(${position.x * 0.1}deg)` }}
-            className="transition-transform duration-75 ease-linear z-10"
+            ref={containerRef}
+            className="h-[400px] bg-cream rounded-xl relative overflow-hidden cursor-crosshair border-2 border-dashed border-banana-dark"
+            onMouseMove={handleMove}
+            onMouseUp={handleEnd}
+            onMouseLeave={handleEnd}
+            onTouchMove={handleMove}
+            onTouchEnd={handleEnd}
           >
-            <div className={`text-9xl filter drop-shadow-xl ${isDragging ? 'scale-110' : 'animate-wiggle'}`}>
+            <div
+              className={`absolute w-24 h-24 flex items-center justify-center text-6xl cursor-grab active:cursor-grabbing select-none transition-transform ${isDragging ? 'scale-125 rotate-12' : 'scale-100'}`}
+              style={{ 
+                left: position.x, 
+                top: position.y, 
+                touchAction: 'none'
+              }}
+              onMouseDown={handleStart}
+              onTouchStart={handleStart}
+            >
               🍌
             </div>
+            
+            {!isDragging && count === 0 && (
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-50">
+                <span className="text-xl">Drag me!</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
