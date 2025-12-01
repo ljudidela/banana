@@ -15,7 +15,7 @@ const Hero = () => {
         className="absolute inset-0 opacity-20 pointer-events-none"
         style={{
           backgroundImage: "radial-gradient(circle, #fff 2px, transparent 2px)",
-          backgroundSize: "28px 28px",
+          backgroundSize: "30px 30px",
         }}
       />
 
