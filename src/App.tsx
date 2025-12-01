@@ -6,7 +6,7 @@ import Footer from './components/Footer';
 
 function App() {
   return (
-    <div className="min-h-screen bg-cream overflow-hidden">
+    <div className="min-h-screen w-full">
       <Hero />
       <BananaCloud />
       <InteractiveZone />
