@@ -2,14 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  background-color: #FFF8DC;
-  color: #1A1A1A;
-  overflow-x: hidden;
+@layer base {
+  body {
+    @apply bg-cream text-dark overflow-x-hidden;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+  }
 }
 
 .banana-gradient {
@@ -20,18 +17,32 @@ body {
   text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
 }
 
-/* Confetti Animation */
-@keyframes fall {
-  0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-}
-
 .confetti {
   position: fixed;
-  top: 0;
   width: 10px;
   height: 10px;
+  background-color: #FFE135;
+  animation: fall linear forwards;
+}
+
+@keyframes fall {
+  to {
+    transform: translateY(100vh) rotate(720deg);
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+::-webkit-scrollbar-track {
+  background: #FFF8DC;
+}
+::-webkit-scrollbar-thumb {
+  background: #FFE135;
+  border-radius: 6px;
+  border: 3px solid #FFF8DC;
+}
+::-webkit-scrollbar-thumb:hover {
   background: #FFD700;
-  animation: fall 3s linear forwards;
-  z-index: 9999;
 }
