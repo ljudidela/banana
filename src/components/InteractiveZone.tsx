@@ -1,47 +1,50 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-const InteractiveZone: React.FC = () => {
+const InteractiveZone = () => {
   const [count, setCount] = useState(0);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const dragRef = useRef<HTMLDivElement>(null);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  
   const containerRef = useRef<HTMLDivElement>(null);
-  const offsetRef = useRef({ x: 0, y: 0 });
+  const bananaRef = useRef<HTMLDivElement>(null);
 
-  // Center the banana initially
   useEffect(() => {
-    if (containerRef.current && dragRef.current) {
-      const parent = containerRef.current.getBoundingClientRect();
-      const child = dragRef.current.getBoundingClientRect();
+    if (containerRef.current && bananaRef.current) {
+      const container = containerRef.current.getBoundingClientRect();
+      const banana = bananaRef.current.getBoundingClientRect();
       setPosition({
-        x: (parent.width - child.width) / 2,
-        y: (parent.height - child.height) / 2
+        x: (container.width - banana.width) / 2,
+        y: (container.height - banana.height) / 2
       });
     }
   }, []);
 
   const handlePointerDown = (e: React.PointerEvent) => {
+    if (!bananaRef.current) return;
+    
+    const rect = bananaRef.current.getBoundingClientRect();
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    });
     setIsDragging(true);
-    if (dragRef.current) {
-      const rect = dragRef.current.getBoundingClientRect();
-      offsetRef.current = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-      };
-    }
-    e.preventDefault();
+    setCount(c => c + 1);
+    
+    e.currentTarget.setPointerCapture(e.pointerId);
   };
 
-  const handlePointerMove = (e: PointerEvent) => {
-    if (!isDragging || !dragRef.current || !containerRef.current) return;
-    
-    const parentRect = containerRef.current.getBoundingClientRect();
-    
-    let newX = e.clientX - parentRect.left - offsetRef.current.x;
-    let newY = e.clientY - parentRect.top - offsetRef.current.y;
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging || !containerRef.current || !bananaRef.current) return;
 
-    const maxX = parentRect.width - dragRef.current.offsetWidth;
-    const maxY = parentRect.height - dragRef.current.offsetHeight;
+    const containerRect = containerRef.current.getBoundingClientRect();
+    const bananaRect = bananaRef.current.getBoundingClientRect();
+
+    let newX = e.clientX - containerRect.left - dragOffset.x;
+    let newY = e.clientY - containerRect.top - dragOffset.y;
+
+    const maxX = containerRect.width - bananaRect.width;
+    const maxY = containerRect.height - bananaRect.height;
 
     newX = Math.max(0, Math.min(newX, maxX));
     newY = Math.max(0, Math.min(newY, maxY));
@@ -49,50 +52,45 @@ const InteractiveZone: React.FC = () => {
     setPosition({ x: newX, y: newY });
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e: React.PointerEvent) => {
     setIsDragging(false);
+    e.currentTarget.releasePointerCapture(e.pointerId);
   };
 
-  useEffect(() => {
-    if (isDragging) {
-      window.addEventListener('pointermove', handlePointerMove);
-      window.addEventListener('pointerup', handlePointerUp);
-    } else {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-    }
-    return () => {
-      window.removeEventListener('pointermove', handlePointerMove);
-      window.removeEventListener('pointerup', handlePointerUp);
-    };
-  }, [isDragging]);
-
   return (
-    <section className="py-16 bg-yellow-50 select-none">
-      <div className="container mx-auto px-4 text-center">
-        <h2 className="text-3xl font-bold mb-4 text-gray-800">Потрогай банан</h2>
-        <p className="text-gray-600 mb-6">Таскай банан мышкой или пальцем</p>
-        
-        <div className="text-2xl font-bold text-yellow-600 mb-8">
-          ты потрогал банан {count} раз
-        </div>
+    <section className="py-20 bg-white">
+      <div className="container mx-auto px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <h2 className="text-4xl font-bold mb-6 text-gray-800">Интерактивная зона</h2>
+          
+          <p className="text-xl text-gray-600 mb-2">
+            Таскай банан мышкой или пальцем
+          </p>
+          
+          <p className="text-2xl font-bold text-yellow-500 mb-8">
+            ты потрогал банан {count} раз
+          </p>
 
-        <div 
-          ref={containerRef}
-          className="relative w-full max-w-3xl mx-auto h-96 bg-white rounded-2xl shadow-inner border-4 border-yellow-100 overflow-hidden touch-none"
-        >
-          <div
-            ref={dragRef}
-            onPointerDown={handlePointerDown}
-            onClick={() => setCount(c => c + 1)}
-            style={{
-              transform: `translate(${position.x}px, ${position.y}px)`,
-              cursor: isDragging ? 'grabbing' : 'grab',
-              touchAction: 'none'
-            }}
-            className="absolute top-0 left-0 w-24 h-24 flex items-center justify-center text-6xl transition-transform duration-75 hover:scale-110 active:scale-95"
+          <div 
+            ref={containerRef}
+            className="relative h-[500px] bg-slate-50 rounded-3xl border-4 border-dashed border-slate-200 overflow-hidden touch-none select-none"
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerLeave={handlePointerUp}
           >
-            🍌
+            <div
+              ref={bananaRef}
+              onPointerDown={handlePointerDown}
+              style={{ 
+                transform: `translate(${position.x}px, ${position.y}px)`,
+                cursor: isDragging ? 'grabbing' : 'grab'
+              }}
+              className="absolute inline-block transition-transform duration-75 ease-out hover:scale-110 active:scale-95"
+            >
+              <div className="text-9xl drop-shadow-2xl">
+                🍌
+              </div>
+            </div>
           </div>
         </div>
       </div>
