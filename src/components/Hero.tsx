@@ -1,67 +1,50 @@
-import { motion } from 'framer-motion';
-import { ArrowDown } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
-export const Hero = () => {
+const Hero = () => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
+
   return (
-    <section className="h-screen w-full flex flex-col items-center justify-center relative overflow-hidden bg-gradient-to-b from-banana via-banana-bg to-banana-bg">
-      {/* Animated Background Elements */}
-      <motion.div 
-        className="absolute inset-0 opacity-20"
-        animate={{ 
-          backgroundPosition: ['0% 0%', '100% 100%'] 
-        }}
-        transition={{ duration: 20, repeat: Infinity, repeatType: 'reverse' }}
-        style={{ 
-          backgroundImage: 'radial-gradient(circle, #FFD700 2px, transparent 2px)',
-          backgroundSize: '40px 40px'
-        }}
-      />
+    <section className="h-screen w-full flex flex-col items-center justify-center relative overflow-hidden banana-gradient">
+      {/* Background Elements */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none">
+        <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-48 h-48 bg-orange-300 rounded-full blur-3xl"></div>
+      </div>
 
-      <div className="z-10 text-center px-4">
-        <motion.div
-          initial={{ scale: 0, rotate: -180 }}
-          animate={{ scale: 1, rotate: 0 }}
-          transition={{ type: "spring", stiffness: 260, damping: 20, duration: 1.5 }}
-          className="mb-8"
-        >
-          <div className="text-[150px] md:text-[200px] leading-none filter drop-shadow-2xl animate-float cursor-pointer hover:scale-110 transition-transform">
-            🍌
-          </div>
-        </motion.div>
+      {/* Main Content */}
+      <div className={`z-10 flex flex-col items-center transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        <div className="relative animate-float">
+          {/* 3D-ish Banana SVG */}
+          <svg width="200" height="200" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-2xl">
+            <path d="M150 40C150 40 160 20 140 20C120 20 100 50 80 80C60 110 40 140 40 160C40 180 60 190 80 180C100 170 140 140 160 100C180 60 150 40 150 40Z" fill="#FFD700" stroke="#1A1A1A" strokeWidth="4"/>
+            <path d="M150 40C150 40 145 45 155 50" stroke="#1A1A1A" strokeWidth="4" strokeLinecap="round"/>
+            <path d="M40 160C40 160 45 165 35 170" stroke="#1A1A1A" strokeWidth="4" strokeLinecap="round"/>
+            <path d="M60 100C70 90 90 70 110 60" stroke="#FFF" strokeWidth="8" strokeLinecap="round" opacity="0.4"/>
+          </svg>
+          <div className="absolute inset-0 bg-yellow-400 blur-2xl opacity-30 -z-10 animate-pulse"></div>
+        </div>
 
-        <motion.h1 
-          initial={{ opacity: 0, y: 50 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="text-4xl md:text-7xl font-black mb-4 text-banana-text text-shadow-glow"
-        >
-          Готов к жёлтому приключению?
-        </motion.h1>
-
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="text-xl md:text-2xl font-medium text-gray-700 mb-12"
-        >
+        <h1 className="text-5xl md:text-7xl font-black text-dark mt-8 text-center leading-tight text-shadow">
+          Готов к жёлтому<br/>приключению?
+        </h1>
+        
+        <p className="text-xl md:text-2xl font-medium text-dark/80 mt-4 text-center max-w-lg">
           Сайт, после которого бананы будут сниться
-        </motion.p>
+        </p>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
+        <button 
+          onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
+          className="mt-12 px-8 py-4 bg-dark text-banana font-bold rounded-full hover:scale-105 transition-transform shadow-lg animate-bounce-slow"
         >
-          <motion.button 
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            className="bg-banana-text text-banana font-bold py-4 px-8 rounded-full flex items-center gap-2 mx-auto shadow-lg hover:shadow-xl transition-shadow"
-            onClick={() => window.scrollTo({ top: window.innerHeight, behavior: 'smooth' })}
-          >
-            Скролль <ArrowDown className="animate-bounce" />
-          </motion.button>
-        </motion.div>
+          Скролль ↓
+        </button>
       </div>
     </section>
   );
 };
+
+export default Hero;
