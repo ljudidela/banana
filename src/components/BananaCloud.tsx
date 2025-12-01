@@ -1,46 +1,64 @@
+import { useEffect, useState } from 'react';
+
 const BananaCloud = () => {
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0.1 }
+    );
+    const el = document.getElementById('banana-cloud');
+    if (el) observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <section className="min-h-[80vh] py-20 relative overflow-hidden flex flex-col items-center justify-center">
+    <section id="banana-cloud" className="min-h-[80vh] bg-cream relative overflow-hidden py-20 flex items-center justify-center">
       {/* Floating Bananas Background */}
-      {[...Array(6)].map((_, i) => (
-        <div 
-          key={i} 
-          className={`absolute opacity-20 animate-float-${i % 2 === 0 ? 'fast' : 'normal'}`}
-          style={{ 
-            top: `${Math.random() * 80}%`, 
-            left: `${Math.random() * 90}%`, 
-            transform: `rotate(${Math.random() * 360}deg) scale(${0.5 + Math.random()})`,
-            animationDelay: `${i * 0.5}s`
+      {[...Array(15)].map((_, i) => (
+        <div
+          key={i}
+          className="absolute text-4xl opacity-30 select-none"
+          style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            animation: `float ${3 + Math.random() * 5}s ease-in-out infinite`,
+            animationDelay: `${Math.random() * 2}s`,
+            transform: `rotate(${Math.random() * 360}deg)`
           }}
         >
-          <span className="text-6xl">🍌</span>
+          🍌
         </div>
       ))}
 
-      <div className="container mx-auto px-4 z-10 grid md:grid-cols-2 gap-12 items-center">
-        <div className="space-y-8">
-          <div className="bg-white/50 backdrop-blur-sm p-8 rounded-3xl shadow-xl hover:scale-105 transition-transform duration-300 border-2 border-banana">
-            <h2 className="text-3xl font-bold mb-2">99% Калия</h2>
-            <p className="text-xl text-gray-700">100% Настроения. Доказано британскими учёными (наверное).</p>
+      <div className={`container mx-auto px-4 relative z-10 transition-all duration-1000 transform ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-20 opacity-0'}`}>
+        <div className="grid md:grid-cols-2 gap-12 items-center">
+          <div className="space-y-8">
+            <div className="bg-white p-8 rounded-3xl shadow-xl transform hover:-rotate-2 transition-transform duration-300 border-4 border-banana">
+              <h2 className="text-3xl font-bold mb-2">99% Калия</h2>
+              <p className="text-xl text-gray-600">И 100% отличного настроения. Доказано британскими учёными (наверное).</p>
+            </div>
+            
+            <div className="bg-white p-8 rounded-3xl shadow-xl transform hover:rotate-2 transition-transform duration-300 border-4 border-banana ml-8">
+              <h2 className="text-3xl font-bold mb-2">Жёлтый — новый чёрный</h2>
+              <p className="text-xl text-gray-600">Стильно, модно, молодёжно. Будь как банан.</p>
+            </div>
           </div>
-          
-          <div className="bg-white/50 backdrop-blur-sm p-8 rounded-3xl shadow-xl hover:scale-105 transition-transform duration-300 delay-100 border-2 border-banana">
-            <h2 className="text-3xl font-bold mb-2">Жёлтый — новый чёрный</h2>
-            <p className="text-xl text-gray-700">Стильно, модно, молодёжно и очень питательно.</p>
-          </div>
-        </div>
 
-        <div className="flex justify-center">
-          <div className="relative group cursor-pointer">
-            <div className="absolute inset-0 bg-banana rounded-full blur-3xl opacity-0 group-hover:opacity-50 transition-opacity duration-500"></div>
-            <svg width="250" height="250" viewBox="0 0 200 200" className="relative transform group-hover:rotate-12 transition-transform duration-300">
-               <path d="M150 40C150 40 160 20 140 20C120 20 100 50 80 80C60 110 40 140 40 160C40 180 60 190 80 180C100 170 140 140 160 100C180 60 150 40 150 40Z" fill="#FFE135" stroke="#1A1A1A" strokeWidth="4"/>
-               {/* Sunglasses */}
-               <rect x="60" y="80" width="30" height="15" rx="5" fill="#1A1A1A" />
-               <rect x="100" y="65" width="30" height="15" rx="5" fill="#1A1A1A" />
-               <line x1="90" y1="87" x2="100" y2="72" stroke="#1A1A1A" strokeWidth="2" />
-            </svg>
-            <p className="text-center mt-4 font-bold opacity-0 group-hover:opacity-100 transition-opacity">Yeah, cool banana.</p>
+          <div className="flex justify-center">
+            <div className="relative group cursor-pointer">
+              <div className="text-[150px] transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12">
+                🍌
+              </div>
+              <div className="absolute top-1/3 left-1/4 w-full text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span className="bg-black text-white px-4 py-1 rounded-full text-sm font-bold">Cool Banana!</span>
+              </div>
+              {/* Sunglasses overlay simulation */}
+              <div className="absolute top-[40%] left-[20%] text-6xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                🕶️
+              </div>
+            </div>
           </div>
         </div>
       </div>
