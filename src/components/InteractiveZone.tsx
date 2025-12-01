@@ -1,103 +1,114 @@
 import React, { useState, useRef, useEffect } from 'react';
 
-export const InteractiveZone = () => {
-  const [score, setScore] = useState(0);
-  const [position, setPosition] = useState({ x: 50, y: 50 });
+const InteractiveZone: React.FC = () => {
+  const [count, setCount] = useState(0);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  
-  const containerRef = useRef<HTMLDivElement>(null);
-  const dragStartPos = useRef({ x: 0, y: 0 });
+  const [hasMoved, setHasMoved] = useState(false);
 
+  const containerRef = useRef<HTMLDivElement>(null);
+  const bananaRef = useRef<HTMLDivElement>(null);
+
+  // Центрируем банан при загрузке
   useEffect(() => {
-    const handleGlobalMouseUp = () => {
-      setIsDragging(false);
-    };
-    window.addEventListener('mouseup', handleGlobalMouseUp);
-    return () => window.removeEventListener('mouseup', handleGlobalMouseUp);
+    if (containerRef.current && bananaRef.current) {
+      const container = containerRef.current.getBoundingClientRect();
+      const banana = bananaRef.current.getBoundingClientRect();
+      setPosition({
+        x: (container.width - banana.width) / 2,
+        y: (container.height - banana.height) / 2
+      });
+    }
   }, []);
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (!bananaRef.current) return;
     e.preventDefault();
-    if (!containerRef.current) return;
-    
-    const rect = (e.target as HTMLElement).getBoundingClientRect();
+    const rect = bananaRef.current.getBoundingClientRect();
     setDragOffset({
       x: e.clientX - rect.left,
       y: e.clientY - rect.top
     });
-    dragStartPos.current = { x: e.clientX, y: e.clientY };
     setIsDragging(true);
+    setHasMoved(false);
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || !containerRef.current) return;
-    
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging || !containerRef.current || !bananaRef.current) return;
+    e.preventDefault();
+
     const containerRect = containerRef.current.getBoundingClientRect();
-    const bananaSize = 64; // Примерный размер банана (text-6xl)
+    const bananaRect = bananaRef.current.getBoundingClientRect();
 
     let newX = e.clientX - containerRect.left - dragOffset.x;
     let newY = e.clientY - containerRect.top - dragOffset.y;
 
-    // Ограничение области
-    const maxX = containerRect.width - bananaSize;
-    const maxY = containerRect.height - bananaSize;
+    // Ограничение области (boundaries)
+    const maxX = containerRect.width - bananaRect.width;
+    const maxY = containerRect.height - bananaRect.height;
 
     newX = Math.max(0, Math.min(newX, maxX));
     newY = Math.max(0, Math.min(newY, maxY));
 
     setPosition({ x: newX, y: newY });
+    setHasMoved(true);
   };
 
-  const handleMouseUp = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    
-    // Вычисляем, был ли это клик или перетаскивание
-    const dist = Math.hypot(e.clientX - dragStartPos.current.x, e.clientY - dragStartPos.current.y);
-    
-    if (dist < 5) {
-      // Это клик
-      setScore(prev => prev + 1);
-      // Визуальный эффект клика можно добавить здесь, если нужно
-      console.log('Banana clicked! Score:', score + 1);
-    }
-    
+  const handlePointerUp = () => {
     setIsDragging(false);
   };
 
+  const handleClick = () => {
+    if (!hasMoved) {
+      setCount((prev) => prev + 1);
+      // Визуальный эффект клика (опционально можно добавить анимацию)
+      console.log('Banana clicked! Count:', count + 1);
+    }
+  };
+
   return (
-    <section className="py-16 bg-yellow-50">
+    <section className="py-20 bg-white select-none">
       <div className="container mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-8 text-gray-800">Потрогай банан</h2>
-        
+        <h2 className="text-4xl font-bold text-center mb-8 text-gray-800">
+          Потрогай Банан
+        </h2>
+
         <div 
           ref={containerRef}
-          className="relative w-full max-w-3xl mx-auto h-96 bg-white rounded-2xl shadow-inner border-4 border-yellow-200 overflow-hidden select-none"
-          onMouseMove={handleMouseMove}
+          className="relative w-full max-w-4xl mx-auto h-[500px] bg-yellow-50 rounded-3xl border-4 border-dashed border-yellow-300 overflow-hidden cursor-default touch-none"
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerLeave={handlePointerUp}
         >
+          {/* Фоновая надпись */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10">
-            <span className="text-9xl">🍌</span>
+            <span className="text-6xl font-bold text-yellow-900 uppercase">Drag Area</span>
           </div>
 
+          {/* Банан */}
           <div
+            ref={bananaRef}
             style={{ 
-              left: `${position.x}px`, 
-              top: `${position.y}px`, 
-              cursor: isDragging ? 'grabbing' : 'grab',
-              transform: isDragging ? 'scale(1.1)' : 'scale(1)'
+              transform: `translate(${position.x}px, ${position.y}px)`,
+              touchAction: 'none'
             }}
-            className="absolute text-6xl transition-transform duration-75 hover:scale-105 active:scale-95"
-            onMouseDown={handleMouseDown}
-            onMouseUp={handleMouseUp}
+            className={`absolute cursor-grab active:cursor-grabbing transition-transform duration-75 ease-out ${isDragging ? 'scale-110' : 'scale-100'} active:scale-95`}
+            onPointerDown={handlePointerDown}
+            onClick={handleClick}
           >
-            🍌
-          </div>
-          
-          <div className="absolute bottom-4 right-4 text-gray-400 text-sm pointer-events-none">
-            Drag & Drop Area
+            <div className="text-[80px] md:text-[120px] leading-none filter drop-shadow-xl hover:drop-shadow-2xl transition-all">
+              🍌
+            </div>
           </div>
         </div>
+
+        <p className="text-center text-gray-400 mt-6">
+          Таскай банан мышкой или пальцем. Кликай, чтобы увеличить невидимый счетчик.
+        </p>
       </div>
     </section>
   );
 };
+
+export default InteractiveZone;
